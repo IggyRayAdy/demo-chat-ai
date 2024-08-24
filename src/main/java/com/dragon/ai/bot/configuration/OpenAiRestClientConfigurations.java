@@ -1,5 +1,6 @@
 package com.dragon.ai.bot.configuration;
 
+import dev.langchain4j.chain.ConversationalChain;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,6 +28,13 @@ public class OpenAiRestClientConfigurations {
                 .baseUrl(BASE_TRANSCRIPTIONS_URL)
                 .defaultHeader(AUTHORIZATION, "Bearer %s".formatted(chatToken))
                 .defaultHeader(CONTENT_TYPE, MULTIPART_FORM_DATA_VALUE)
+                .build();
+    }
+
+    @Bean
+    public ConversationalChain conversationalChain() {
+        return ConversationalChain.builder()
+                .chatLanguageModel(OpenAiChatModel.withApiKey(chatToken))
                 .build();
     }
 

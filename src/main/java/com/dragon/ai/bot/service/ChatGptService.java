@@ -1,12 +1,12 @@
 package com.dragon.ai.bot.service;
 
 import com.dragon.ai.bot.model.TranscriptionResponse;
+import dev.langchain4j.chain.ConversationalChain;
 import dev.langchain4j.data.audio.Audio;
 import dev.langchain4j.data.message.AiMessage;
 import dev.langchain4j.data.message.AudioContent;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.chat.ChatLanguageModel;
-import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.output.Response;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
@@ -22,38 +22,26 @@ import java.io.File;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Base64;
-import java.util.List;
 
 @Service
 public class ChatGptService {
 
     private final RestClient openAiHttpClient;
-    private final ChatContextService chatContextService;
-    private final OpenAiChatModel openAiChatModel;
     private final ChatLanguageModel customChatLanguageModel;
+    private final ConversationalChain conversationalChain;
 
     public ChatGptService(RestClient openAiHttpClient,
-                          ChatContextService chatContextService,
-                          @Qualifier("openAiChatModel") OpenAiChatModel openAiChatModel,
-                          @Qualifier("customChatLanguageModel") ChatLanguageModel customChatLanguageModel
+                          @Qualifier("customChatLanguageModel") ChatLanguageModel customChatLanguageModel,
+                          ConversationalChain conversationalChain
     ) {
         this.openAiHttpClient = openAiHttpClient;
-        this.chatContextService = chatContextService;
-        this.openAiChatModel = openAiChatModel;
         this.customChatLanguageModel = customChatLanguageModel;
+        this.conversationalChain = conversationalChain;
     }
 
-    public String chatMessaging(Long chatId, String userTextMessage) {
+    public String chatMessaging(Long chatId, String userMessage) {
 
-        UserMessage userMessage = UserMessage.userMessage(userTextMessage);
-
-        var messageWithContext = chatContextService.getChatContext(chatId, userMessage);
-
-        AiMessage aiResponse = openAiChatModel.generate(messageWithContext).content();
-
-        chatContextService.updateChatContext(chatId, List.of(userMessage, aiResponse));
-
-        return aiResponse.text();
+        return conversationalChain.execute(userMessage);
     }
 
     @SneakyThrows

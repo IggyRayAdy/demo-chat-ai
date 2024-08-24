@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 @Service
+@Deprecated(since = "use conversationalChain")
 public class ChatContextService {
 
     private final Map<Long, LinkedList<ChatMessage>> chatContextMap = new ConcurrentHashMap<>();
